@@ -59,6 +59,7 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            runtimeOnly(libs.androidx.appcompat)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -69,6 +70,14 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.multiplatform.settings.no.arg)
+            // implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
+            // implementation( "androidx.compose.material:material-icons-extended:$compose_version")
+            // implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
+            implementation(libs.peekaboo.ui)
+            implementation(libs.peekaboo.image.picker)
+            implementation("io.github.kashif-mehmood-km:camerak:+")
+            implementation("io.github.kashif-mehmood-km:image_saver_plugin:0.0.7")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
