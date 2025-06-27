@@ -1,4 +1,3 @@
-import com.android.build.api.instrumentation.InstrumentationScope
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -84,7 +83,7 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
             implementation("media.kamel:kamel-image-default:1.0.6")
-            implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0")
+            //implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

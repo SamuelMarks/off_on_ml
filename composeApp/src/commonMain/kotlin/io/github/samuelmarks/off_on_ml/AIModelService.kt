@@ -1,15 +1,15 @@
 package io.github.samuelmarks.off_on_ml
 
-import io.github.modelcontext.ModelContext
-import io.github.modelcontext.google.Google
+/*import io.github.modelcontext.ModelContext
+import io.github.modelcontext.google.Google*/
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class AIModelService(apiKey: String) {
     // Initialize the SDK with the Google vendor and the provided API key.
-    private val modelContext = ModelContext(
+    /*private val modelContext = ModelContext(
         vendors = listOf(Google(apiKey))
-    )
+    )*/
 
     /**
      * Generates content using the specified model and prompt.
@@ -18,7 +18,7 @@ class AIModelService(apiKey: String) {
      * @return The generated text content or an error message.
      */
     suspend fun generateContent(modelId: String, prompt: String): String = withContext(Dispatchers.Default) {
-        try {
+        /*try {
             // Use the SDK to create a request
             val response = modelContext.create(modelId) {
                 // The SDK supports multi-modal input, but for now we just add text.
@@ -30,6 +30,7 @@ class AIModelService(apiKey: String) {
         } catch (e: Exception) {
             e.printStackTrace()
             "Error: ${e.message}"
-        }
+        }*/
+        "Error: NotImplemented [received $modelId, \"$prompt\"]"
     }
 }

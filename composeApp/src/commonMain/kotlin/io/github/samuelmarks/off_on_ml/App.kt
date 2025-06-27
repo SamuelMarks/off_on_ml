@@ -2,11 +2,10 @@ package io.github.samuelmarks.off_on_ml
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
+/*import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info*/
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.*
@@ -22,14 +21,24 @@ import offonml.composeapp.generated.resources.Res
 import offonml.composeapp.generated.resources.contract_edit_24px
 import offonml.composeapp.generated.resources.photo_camera_24px
 import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 // Updated model lists to reflect real Gemini model IDs
 val offlineModels: List<String> =
-    listOf("google/medgemma-4b-it", "google/medgemma-4b-pt", "google/medgemma-27b-text-it")
+    listOf(
+        "google/gemma-3n-E4B-it", "google/gemma-3n-E2B-it",
+        "google/gemma-3n-E2B", "google/gemma-3n-E4B",
+        "google/medgemma-4b-it", "google/medgemma-4b-pt", "google/medgemma-27b-text-it"
+    )
 val onlineModels: List<String> =
-    listOf("google/gemini-1.5-flash-latest", "google/gemini-1.5-pro-latest", "google/gemini-1.0-pro")
+    listOf(
+        "google/gemini-1.5-flash-latest",
+        "google/gemini-1.5-pro-latest",
+        "google/gemini-1.0-pro"
+    )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun App() {
@@ -38,8 +47,22 @@ fun App() {
 
     // State for API Key, Models, and AI interaction
     var apiKey by remember { mutableStateOf(settings.getString(SettingsKeys.GOOGLE_API_KEY, "")) }
-    var selectedOnlineModel by remember { mutableStateOf(settings.getString(SettingsKeys.SELECTED_ONLINE_MODEL, onlineModels.first())) }
-    var selectedOfflineModel by remember { mutableStateOf(settings.getString(SettingsKeys.SELECTED_OFFLINE_MODEL, offlineModels.first())) }
+    var selectedOnlineModel by remember {
+        mutableStateOf(
+            settings.getString(
+                SettingsKeys.SELECTED_ONLINE_MODEL,
+                onlineModels.first()
+            )
+        )
+    }
+    var selectedOfflineModel by remember {
+        mutableStateOf(
+            settings.getString(
+                SettingsKeys.SELECTED_OFFLINE_MODEL,
+                offlineModels.first()
+            )
+        )
+    }
 
     // State for prompts (hoisted from child screens)
     var textPrompt by remember { mutableStateOf("") }
@@ -59,7 +82,11 @@ fun App() {
                 topBar = {
                     TopAppBar(
                         title = { Text("Off/On ML") },
-                        actions = { Switch(checked = isDarkTheme.value, onCheckedChange = { isDarkTheme.value = it }) }
+                        actions = {
+                            Switch(
+                                checked = isDarkTheme.value,
+                                onCheckedChange = { isDarkTheme.value = it })
+                        }
                     )
                 },
                 bottomBar = {
@@ -70,14 +97,26 @@ fun App() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             if (isDarkTheme.value) {
-                                ModelChooser(isOffline = true, selectedOfflineModel) { newSelection ->
+                                ModelChooser(
+                                    isOffline = true,
+                                    selectedOfflineModel
+                                ) { newSelection ->
                                     selectedOfflineModel = newSelection
-                                    settings.putString(SettingsKeys.SELECTED_OFFLINE_MODEL, newSelection)
+                                    settings.putString(
+                                        SettingsKeys.SELECTED_OFFLINE_MODEL,
+                                        newSelection
+                                    )
                                 }
                             } else {
-                                ModelChooser(isOffline = false, selectedOnlineModel) { newSelection ->
+                                ModelChooser(
+                                    isOffline = false,
+                                    selectedOnlineModel
+                                ) { newSelection ->
                                     selectedOnlineModel = newSelection
-                                    settings.putString(SettingsKeys.SELECTED_ONLINE_MODEL, newSelection)
+                                    settings.putString(
+                                        SettingsKeys.SELECTED_ONLINE_MODEL,
+                                        newSelection
+                                    )
                                 }
                             }
                         }
@@ -89,9 +128,12 @@ fun App() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    ApiKeyInput(apiKey) { newKey ->
-                        apiKey = newKey
-                        settings.putString(SettingsKeys.GOOGLE_API_KEY, newKey)
+
+                    AnimatedVisibility(visible = !isDarkTheme.value) {
+                        ApiKeyInput(apiKey) { newKey ->
+                            apiKey = newKey
+                            settings.putString(SettingsKeys.GOOGLE_API_KEY, newKey)
+                        }
                     }
 
                     PromptTabs(
@@ -113,17 +155,19 @@ fun App() {
                                 }
                                 isLoading = true
                                 val service = AIModelService(apiKey)
-                                val finalPrompt = if (selectedTabIndex == 0) "Describe this image." else textPrompt
+                                val finalPrompt =
+                                    if (selectedTabIndex == 0) "Describe this image." else textPrompt
 
                                 // For this demo, we are only sending the text prompt.
                                 // The SDK supports image inputs, which can be added later.
-                                aiResponse = service.generateContent(selectedOnlineModel, finalPrompt)
+                                aiResponse =
+                                    service.generateContent(selectedOnlineModel, finalPrompt)
                                 isLoading = false
                             }
                         },
                         enabled = !isLoading && (textPrompt.isNotBlank() || imagePrompt != null)
                     ) {
-                        Text("Generate Content with Gemini")
+                        Text("Generate Content")
                     }
 
                     // Response Area
@@ -157,18 +201,25 @@ fun ApiKeyInput(apiKey: String, onApiKeyChange: (String) -> Unit) {
         placeholder = { Text("Enter your key here") },
         visualTransformation = PasswordVisualTransformation(),
         singleLine = true,
-        leadingIcon = { Icon(Icons.Default.Info, contentDescription = "API Key") }
+        leadingIcon = {
+            Icon(
+                painterResource(Res.drawable.contract_edit_24px),
+                contentDescription = "API Key"
+            )
+        }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelChooser(isOffline: Boolean, selectedOption: String, onOptionSelected: (String) -> Unit) {
-    val options = if (isOffline) offlineModels else onlineModels
-    val prefix = if (isOffline) "\uD83C\uDF1A OFFLINE: " else "\uD83C\uDF1E ONLINE: "
+    val (options, prefix) = if (isOffline) Pair(offlineModels, "\uD83C\uDF1A OFFLINE: ") else Pair(
+        onlineModels,
+        "\uD83C\uDF1E ONLINE: "
+    )
     var expanded by remember { mutableStateOf(false) }
 
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !it }) {
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         TextField(
             prefix = { Text(prefix, style = MaterialTheme.typography.bodySmall) },
             value = selectedOption,
@@ -214,7 +265,12 @@ fun PromptTabs(
                 Tab(
                     selected = selectedTabIndex == index,
                     onClick = { onTabSelected(index) },
-                    icon = { Icon(painterResource(tabItem.icon), contentDescription = tabItem.contentDescription) },
+                    icon = {
+                        Icon(
+                            painterResource(tabItem.icon),
+                            contentDescription = tabItem.title
+                        )
+                    },
                     text = { Text(tabItem.title) }
                 )
             }
