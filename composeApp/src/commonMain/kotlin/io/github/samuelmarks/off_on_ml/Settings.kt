@@ -9,4 +9,6 @@ object SettingsKeys {
     const val SELECTED_ONLINE_MODEL = "gemini-2.5-flash"
     /* `.first()` / `[0]` doesn't work for `const`s; so just some literals ^
      *  could probably hack gradle to generate these in future… */
+
+    const val GOOGLE_API_KEY = ""
 }

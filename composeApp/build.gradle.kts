@@ -1,3 +1,4 @@
+import com.android.build.api.instrumentation.InstrumentationScope
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -66,6 +67,8 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
+            // api(compose.material.icons.extended)
+            // runtimeOnly("androidx.compose.material:material-icons-extended:1.7.8")
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
@@ -74,10 +77,14 @@ kotlin {
             // implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
             // implementation( "androidx.compose.material:material-icons-extended:$compose_version")
             // implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
-            implementation(libs.peekaboo.ui)
-            implementation(libs.peekaboo.image.picker)
-            implementation("io.github.kashif-mehmood-km:camerak:+")
-            implementation("io.github.kashif-mehmood-km:image_saver_plugin:0.0.7")
+            /*implementation(libs.peekaboo.ui)
+            implementation(libs.peekaboo.image.picker)*/
+            /*implementation("io.github.kashif-mehmood-km:camerak:+")
+            implementation("io.github.kashif-mehmood-km:image_saver_plugin:0.0.7")*/
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation("media.kamel:kamel-image-default:1.0.6")
+            implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -92,6 +99,17 @@ kotlin {
 android {
     namespace = "io.github.samuelmarks.off_on_ml"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+    androidComponents {
+        /*onVariants { variant ->
+            variant.instrumentation.transformClassesWith(
+                FieldSkippingClassVisitor.Factory::class.java,
+                scope = InstrumentationScope.ALL,
+            ) { params ->
+                params.classes.add("io.ktor.client.plugins.Messages")
+            }
+        }*/
+    }
 
     defaultConfig {
         applicationId = "io.github.samuelmarks.off_on_ml"
