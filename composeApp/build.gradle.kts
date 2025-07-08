@@ -82,8 +82,9 @@ kotlin {
             implementation("io.github.kashif-mehmood-km:image_saver_plugin:0.0.7")*/
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
-            implementation("media.kamel:kamel-image-default:1.0.6")
+            implementation(libs.kamel.image.default)
             //implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0")
+            implementation(libs.ktor.client.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

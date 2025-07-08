@@ -1,6 +1,5 @@
 package io.github.samuelmarks.off_on_ml
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -9,29 +8,48 @@ import androidx.core.graphics.scale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-import kotlin.random.Random
-
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.net.URL
 
-private fun getContext(): Context = MainApplication.INSTANCE
+// This is your expect fun from commonMain
+/*
+expect suspend fun resizeImage(
+    source: ImageSource,
+    resolution: Resolution
+): ImageSource.Local?
+*/
 
 actual suspend fun resizeImage(source: ImageSource, resolution: Resolution): ImageSource.Local? = withContext(Dispatchers.IO) {
+    // Get the context from our initialized dependency holder
+    val context = PlatformDependencies.appContext
+
     try {
-        val inputStream = getInputStream(source)
+        // Read the full image into a byte array once. This avoids issues with
+        // trying to read from the same InputStream multiple times.
+        val imageBytes = getInputStream(source, context)?.use { it.readBytes() }
+            ?: return@withContext null
+
+        // First pass: decode bounds to get original dimensions and calculate sample size
         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeStream(getInputStream(source), null, options) // First pass to get dimensions
+        BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
 
         options.inSampleSize = calculateInSampleSize(options, resolution.width, resolution.height)
         options.inJustDecodeBounds = false
 
-        val bitmap = BitmapFactory.decodeStream(getInputStream(source), null, options) ?: return@withContext null
-        val scaledBitmap = bitmap.scale(resolution.width, resolution.height, filter = true)
-        bitmap.recycle()
+        // Second pass: decode the bitmap with the calculated sample size
+        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
+            ?: return@withContext null
 
-        val tempFile = File(getContext().cacheDir, "resized_${Random.nextLong()}.jpg")
+        // Scale the downsampled bitmap to the final exact resolution
+        val scaledBitmap = bitmap.scale(resolution.width, resolution.height, filter = true)
+        if (scaledBitmap != bitmap) {
+            bitmap.recycle() // Recycle the intermediate bitmap if a new one was created
+        }
+
+        // Save the final bitmap to a temporary file in the cache directory
+        val tempFile = File(context.cacheDir, "resized_${System.currentTimeMillis()}.jpg")
         FileOutputStream(tempFile).use { out ->
             scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
         }
@@ -44,10 +62,15 @@ actual suspend fun resizeImage(source: ImageSource, resolution: Resolution): Ima
     }
 }
 
-private fun getInputStream(source: ImageSource): InputStream {
-    return when (source) {
-        is ImageSource.Local -> getContext().contentResolver.openInputStream(Uri.parse(source.path))!!
-        is ImageSource.Remote -> URL(source.url).openStream()
+private fun getInputStream(source: ImageSource, context: android.content.Context): InputStream? {
+    return try {
+        when (source) {
+            is ImageSource.Local -> context.contentResolver.openInputStream(Uri.parse(source.path))
+            is ImageSource.Remote -> URL(source.url).openStream()
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }
 
@@ -63,13 +86,3 @@ private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int,
     }
     return inSampleSize
 }
-
-// You might need to expose your Application context via a static field for this file.
-// In your `MainApplication.kt` (or custom Application class):
-// companion object {
-//    lateinit var INSTANCE: MainApplication
-// }
-// override fun onCreate() {
-//    super.onCreate()
-//    INSTANCE = this
-// }
